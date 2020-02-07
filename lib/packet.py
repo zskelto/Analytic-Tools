@@ -6,8 +6,9 @@ def collect_packets():
     while i < 20:
         packet = s.recvfrom(65565)
         packet = packet[0]
-        parse(packet)
+        print(parse(packet))
         i = i + 1
+    s.close()
 
 def bin_to_mac(addr):
     return "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (addr[0], addr[1], addr[2], addr[3], addr[4], addr[5])
@@ -24,7 +25,6 @@ def parse(packet):
         elif(data['ip']['protocol'] == 1):
             data['icmp'] = parse_icmp(packet,data['ip']['length'])
 
-    print(data)
     return data
 
 def parse_eth(packet):
@@ -54,7 +54,7 @@ def parse_tcp(packet,ip_length):
     return {'src_port':src_port, 'dst_port':tcp[1], 'length':tcp_length,'flag':flags,'data':data}
 
 def parse_udp(packet, ip_length):
-    udp = struct.unpack('!HHHH',packet[14+ip_length:14+iplength+8])
+    udp = struct.unpack('!HHHH',packet[14+ip_length:14+ip_length+8])
     src_port = udp[0]
     dst_port = udp[1]
     udp_length = udp[2]

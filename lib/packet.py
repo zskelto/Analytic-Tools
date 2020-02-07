@@ -19,7 +19,13 @@ def parse(packet):
         data['ip'] = parse_ip(packet)
         if(data['ip']['protocol'] == 6):
             data['tcp'] = parse_tcp(packet,data['ip']['length'])
+        elif(data['ip']['protocol'] == 17):
+            data['udp'] = parse_udp(packet,data['ip']['length'])
+        elif(data['ip']['protocol'] == 1):
+            data['icmp'] = parse_icmp(packet,data['ip']['length'])
+
     print(data)
+    return data
 
 def parse_eth(packet):
     eth_length = 14
@@ -47,8 +53,16 @@ def parse_tcp(packet,ip_length):
     data = packet[14+ip_length+tcp_length:]
     return {'src_port':src_port, 'dst_port':tcp[1], 'length':tcp_length,'flag':flags,'data':data}
 
-def parse_udp(packet):
-    return
+def parse_udp(packet, ip_length):
+    udp = struct.unpack('!HHHH',packet[14+ip_length:14+iplength+8])
+    src_port = udp[0]
+    dst_port = udp[1]
+    udp_length = udp[2]
+    data = packet[14+ip_length+udp_length:]
+    return {'src_port':src_port, 'dst_port':dst_port, 'length':udp_length, 'data':data}
 
-def parse_icmp(packet):
-    return
+def parse_icmp(packet, ip_length):
+    icmp = struct.unpack('!BBHL',packet[14+ip_length:14+ip_length+8])
+    icmp_type = icmp[0]
+    icmp_code = icmp[1]
+    return {'type':icmp_type, 'code':icmp_code}

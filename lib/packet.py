@@ -24,7 +24,6 @@ def parse(packet):
             data['udp'] = parse_udp(packet,data['ip']['length'])
         elif(data['ip']['protocol'] == 1):
             data['icmp'] = parse_icmp(packet,data['ip']['length'])
-
     return data
 
 def parse_eth(packet):

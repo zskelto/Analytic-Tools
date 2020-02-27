@@ -2,29 +2,32 @@ import socket, uuid
 
 class Network():
     def __init__(self):
-        self.ip = socket.gethostbyname(socket.gethostname())
         self.mac = ':'.join([('%x' % uuid.getnode())[i:i+2] for i in range(0,12,2)])
-        self.connections = {}
+        self.syn = {}
 
     def check_tcp(self,packet):
         if(self.mac != packet['eth']['src_mac']):
             ip = packet['ip']['src']
-        else:
-            ip = packet['ip']['dst']
-        
-        if not(ip in self.connections):
-            self.connections[ip] = {'SYN-Count':0,'Last-Flag':0}
-        
-        if(packet['ip']['src'] == ip):
-            #Recieved SYN
-            if(packet['tcp']['flag'] == 2):
-                self.connections[ip]['SYN-Count'] += 1
-                self.connections[ip]['Last-Flag'] = 2
+            port = packet['tcp']['dst_port']
+
+            ##SYN Flood Check
+            #Checks if IP has been logged for SYN flood
+            if (not(ip in self.syn) and (packet['tcp']['flag'] == 2)):
+                self.syn[ip] = {'port':[port]}
+            #Has been logged and recieved SYN
+            elif(packet['tcp']['flag'] == 2):
+                if(port in self.syn[ip]['port']):
+                    #TODO: Log SYN Flood in Network.log
+                else:
+                    self.syn[ip]['port'].append(port)
             #Recieved ACK
             elif(packet['tcp']['flag'] == 16):
-                if(self.connections[ip]['Last-Flag'] == 2):
-                    self.connections[ip]['SYN-Count'] -= 1
-        return 
+                if(port in self.syn[ip]['port']):
+                    self.syn[ip]['port'].remove(port)
+
+            ##SYN Scan
+            #TODO
+        return 0
 
     def check_udp(packet):
         return

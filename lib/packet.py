@@ -1,15 +1,5 @@
 import socket, sys, struct
 
-def collect_packets():
-    s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
-    i = 0
-    while i < 20:
-        packet = s.recvfrom(65565)
-        packet = packet[0]
-        print(parse(packet))
-        i = i + 1
-    s.close()
-
 def bin_to_mac(addr):
     return "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (addr[0], addr[1], addr[2], addr[3], addr[4], addr[5])
 

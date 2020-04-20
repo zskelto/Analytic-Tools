@@ -43,7 +43,6 @@ class Network():
         syn_reverse['status'] = 'SYN'
         conn_reverse = syn.copy()
         conn_reverse['status'] = 'Connected'
-
         #SYN Recieved/Sent
         if(flag == 2):
             if(str(dst_port) in self.syn):
@@ -75,7 +74,6 @@ class Network():
                 f = open(self.notice,'a')
                 f.write(info)
                 f.close()
-        
         #ACK Recieved/Sent
         if(flag == 16):
             if(syn in self.connections):
@@ -108,7 +106,7 @@ class Network():
         #RST Recieved/Sent       
         if(flag == 4 or flag == 20):
             if((syn_reverse in self.connections) and (self.tcp_port_scan == 1)):
-                self.connections.remove(syn_reverse)
+                self.connections.remove(syn_reverse)    
                 info = '[ALERT] TCP Closed Port Scan: '
                 info += str(datetime.datetime.now()) + ' '
                 info += src_ip + ' '
@@ -129,29 +127,29 @@ class Network():
                 f = open(self.notice,'a')
                 f.write(info)
                 f.close()
+            elif(conn in self.connections):
+                self.connections.remove(conn)
+                info = '[INFO] Connection Ended: '
+                info += str(datetime.datetime.now()) + ' '
+                info += src_ip + ' '
+                info += str(src_port) + ' '
+                info += dst_ip + ' '
+                info += str(dst_port) + '\n'
+                f = open(self.conn,'a')
+                f.write(info)
+                f.close()
+            elif(conn_reverse in self.connections):
+                self.connections.remove(conn_reverse)
+                info = '[INFO] Connection Ended: '
+                info += str(datetime.datetime.now()) + ' '
+                info += src_ip + ' '
+                info += str(src_port) + ' '
+                info += dst_ip + ' '
+                info += str(dst_port) + '\n'
+                f = open(self.conn,'a')
+                f.write(info)
+                f.close()
             elif(self.tcp_rst_attack == 1):
-                if(conn in self.connections):
-                    self.connections.remove(conn)
-                    info = '[INFO] Connection Ended: '
-                    info += str(datetime.datetime.now()) + ' '
-                    info += src_ip + ' '
-                    info += str(src_port) + ' '
-                    info += dst_ip + ' '
-                    info += str(dst_port) + '\n'
-                    f = open(self.conn,'a')
-                    f.write(info)
-                    f.close()
-                elif(conn_reverse in self.connections):
-                    self.connections.remove(conn_reverse)
-                    info = '[INFO] Connection Ended: '
-                    info += str(datetime.datetime.now()) + ' '
-                    info += src_ip + ' '
-                    info += str(src_port) + ' '
-                    info += dst_ip + ' '
-                    info += str(dst_port) + '\n'
-                    f = open(self.conn,'a')
-                    f.write(info)
-                    f.close()
                 info = '[ALERT] TCP RST Attack: '
                 info += str(datetime.datetime.now()) + ' '
                 info += src_ip + ' '

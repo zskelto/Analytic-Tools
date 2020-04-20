@@ -31,6 +31,7 @@ while 1:
     packet = packet[0]
     #Parse packet
     p = lib.packet.parse(packet)
+    print(p)
     #Inspect TCP packet
     if(p['eth']['protocol'] == 8 and p['ip']['protocol'] == 6):
         info = n.check_tcp(p)

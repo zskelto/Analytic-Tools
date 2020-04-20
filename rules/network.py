@@ -46,12 +46,26 @@ class Network():
 
         #SYN Recieved/Sent
         if(flag == 2):
+            if(str(dst_port) in self.syn):
+                self.syn[str(dst_port)] += 1
             if(self.connections == []):
                 self.connections.append(syn)
+                self.syn[str(dst_port)] = 1
             elif((not(syn in self.connections)) and (not(conn in self.connections))):
                 self.connections.append(syn)
+                self.syn[str(dst_port)] = 1
             #SYN Flood
-            elif self.syn_flood == 1:
+            elif self.tcp_port_scan == 1 and self.syn[str(dst_port)] == 2:
+                info = '[ALERT] TCP Filter Port Scan: '
+                info += str(datetime.datetime.now()) + ' '
+                info += src_ip + ' '
+                info += str(src_port) + ' '
+                info += dst_ip + ' '
+                info += str(dst_port) + '\n'
+                f = open(self.notice,'a')
+                f.write(info)
+                f.close()
+            elif self.syn_flood == 1 and self.syn[str(dst_port)] > 2:
                 info = '[ALERT] SYN Flood: '
                 info += str(datetime.datetime.now()) + ' '
                 info += src_ip + ' '
@@ -94,7 +108,19 @@ class Network():
         #RST Recieved/Sent       
         if(flag == 4 or flag == 20):
             if((syn_reverse in self.connections) and (self.tcp_port_scan == 1)):
-                info = '[ALERT] TCP Port Scan: '
+                self.connections.remove(syn_reverse)
+                info = '[ALERT] TCP Closed Port Scan: '
+                info += str(datetime.datetime.now()) + ' '
+                info += src_ip + ' '
+                info += str(src_port) + ' '
+                info += dst_ip + ' '
+                info += str(dst_port) + '\n'
+                f = open(self.notice,'a')
+                f.write(info)
+                f.close()
+            elif((syn in self.connections) and (self.tcp_port_scan == 1)):
+                self.connections.remove(syn)
+                info = '[ALERT] TCP Open Port Scan: '
                 info += str(datetime.datetime.now()) + ' '
                 info += src_ip + ' '
                 info += str(src_port) + ' '
@@ -104,6 +130,28 @@ class Network():
                 f.write(info)
                 f.close()
             elif(self.tcp_rst_attack == 1):
+                if(conn in self.connections):
+                    self.connections.remove(conn)
+                    info = '[INFO] Connection Ended: '
+                    info += str(datetime.datetime.now()) + ' '
+                    info += src_ip + ' '
+                    info += str(src_port) + ' '
+                    info += dst_ip + ' '
+                    info += str(dst_port) + '\n'
+                    f = open(self.conn,'a')
+                    f.write(info)
+                    f.close()
+                elif(conn_reverse in self.connections):
+                    self.connections.remove(conn_reverse)
+                    info = '[INFO] Connection Ended: '
+                    info += str(datetime.datetime.now()) + ' '
+                    info += src_ip + ' '
+                    info += str(src_port) + ' '
+                    info += dst_ip + ' '
+                    info += str(dst_port) + '\n'
+                    f = open(self.conn,'a')
+                    f.write(info)
+                    f.close()
                 info = '[ALERT] TCP RST Attack: '
                 info += str(datetime.datetime.now()) + ' '
                 info += src_ip + ' '
@@ -113,7 +161,6 @@ class Network():
                 f = open(self.notice,'a')
                 f.write(info)
                 f.close()
-
         return info
 
     def check_udp(packet):
